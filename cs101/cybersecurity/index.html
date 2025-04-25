@@ -30,7 +30,7 @@
         
         h1 {
             font-size: 3.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem; /* Reduced margin to balance larger icon */
             background: linear-gradient(90deg, #ef4444, #f59e0b);
             -webkit-background-clip: text;
             background-clip: text;
@@ -42,12 +42,20 @@
         p {
             font-size: 1.5rem;
             opacity: 0.9;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             color: #e5e7eb;
         }
         
         .pulse {
             animation: pulse 2s infinite;
+        }
+        
+        /* Larger warning icon (updated from 4rem to 6rem) */
+        .warning-icon {
+            font-size: 12rem; /* Increased size */
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
         }
         
         @keyframes fadeIn {
@@ -61,15 +69,9 @@
             100% { transform: scale(1); }
         }
         
-        .warning-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            animation: bounce 2s infinite;
-        }
-        
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-15px); } /* Slightly stronger bounce */
         }
     </style>
 </head>
@@ -77,11 +79,11 @@
     <div class="container pulse">
         <div class="warning-icon">⚠️</div>
         <h1>YOU HAVE ALMOST BEEN HACKED!</h1>
-        <h3>Remember to be suspicious of the links you click!</h3>
+        <h2>Remember to be suspicious of the links you click!</h2>
     </div>
 
     <script>
-        // Add subtle background particles for visual interest
+        // Background particles (unchanged)
         document.addEventListener('DOMContentLoaded', function() {
             const colors = ['rgba(239, 68, 68, 0.3)', 'rgba(245, 158, 11, 0.3)', 'rgba(59, 130, 246, 0.3)'];
             
@@ -98,7 +100,6 @@
                 particle.style.zIndex = '-1';
                 document.body.appendChild(particle);
                 
-                // Animate particles
                 animateParticle(particle);
             }
             
