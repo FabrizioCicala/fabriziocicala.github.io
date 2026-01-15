@@ -17,11 +17,16 @@
       display: none;
       z-index: 50;
       font-size: 0.875rem;
+      max-width: 200px;
+      word-wrap: break-word;
     }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
   <h1 class="text-3xl font-bold mb-4 text-center">All Users’ Availability</h1>
+
+  <!-- Reset Schedule Button -->
+  <button id="resetBtn" class="mb-4 p-2 bg-red-500 text-white rounded hover:bg-red-600">Reset Schedule</button>
 
   <div id="schedulerContainer" class="overflow-auto w-full max-w-5xl relative">
     <table id="schedulerTable" class="table-auto border-collapse border border-gray-300 w-full text-center rounded-lg overflow-hidden">
@@ -32,36 +37,43 @@
   </div>
 
   <script>
-    const hours = Array.from({length: 13}, (_, i) => 8 + i);
+    const hours = Array.from({length: 13}, (_, i) => 8 + i); // 8AM - 8PM
     const days = Array.from({length: 10}, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() + i);
       return {
         date: d,
-        weekday: d.toLocaleDateString('default', { weekday: 'long' }), // Monday, Tuesday
-        monthDay: d.toLocaleDateString('default', { month: 'short', day: 'numeric' }) // Jan 15
+        weekday: d.toLocaleDateString('default', { weekday: 'long' }),
+        monthDay: d.toLocaleDateString('default', { month: 'short', day: 'numeric' })
       };
     });
 
     const tableHeader = document.getElementById('tableHeader');
     const tableBody = document.getElementById('tableBody');
     const tooltip = document.getElementById('tooltip');
+    const resetBtn = document.getElementById('resetBtn');
 
-    const schedulerData = JSON.parse(localStorage.getItem('schedulerData') || '[]');
+    function loadData() {
+      return JSON.parse(localStorage.getItem('schedulerData') || '[]');
+    }
 
     function createTable() {
+      const schedulerData = loadData();
+
       // Header
       const headerRow = document.createElement('tr');
       const emptyCell = document.createElement('th');
       emptyCell.className = 'border p-2 bg-gray-200 sticky left-0 z-10';
       emptyCell.innerText = 'Hour';
       headerRow.appendChild(emptyCell);
+
       days.forEach(day => {
         const th = document.createElement('th');
         th.className = 'border p-2 bg-gray-200';
         th.innerHTML = `<div>${day.weekday}<br>${day.monthDay}</div>`;
         headerRow.appendChild(th);
       });
+
       tableHeader.innerHTML = '';
       tableHeader.appendChild(headerRow);
 
@@ -69,6 +81,7 @@
       tableBody.innerHTML = '';
       hours.forEach(hour => {
         const tr = document.createElement('tr');
+
         const hourCell = document.createElement('td');
         hourCell.className = 'border p-2 font-semibold bg-gray-100 sticky left-0 z-10';
         hourCell.innerText = `${hour}:00`;
@@ -78,13 +91,13 @@
           const td = document.createElement('td');
           td.className = 'border p-2 relative';
           const key = `${dayIndex}-${hour}`;
-          // Count availability
           const availableUsers = schedulerData.filter(u => u.availability.includes(key)).map(u => u.name);
           const unavailableUsers = schedulerData.filter(u => !u.availability.includes(key)).map(u => u.name);
 
-          // Color
+          // Color coding
           if (availableUsers.length > 1) td.style.backgroundColor = '#22c55e';
           else if (availableUsers.length === 1) td.style.backgroundColor = '#93c5fd';
+          else td.style.backgroundColor = ''; // empty if no one
 
           // Hover tooltip
           td.addEventListener('mouseenter', e => {
@@ -107,6 +120,14 @@
         tableBody.appendChild(tr);
       });
     }
+
+    // Reset button clears localStorage and updates table immediately
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset the schedule? This will delete all data.')) {
+        localStorage.removeItem('schedulerData');
+        createTable(); // redraw table empty
+      }
+    });
 
     createTable();
   </script>
