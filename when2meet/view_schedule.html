@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Schedule</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tooltip {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      pointer-events: none;
+      display: none;
+      z-index: 50;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+  <h1 class="text-3xl font-bold mb-4 text-center">All Users’ Availability</h1>
+
+  <div id="schedulerContainer" class="overflow-auto w-full max-w-5xl relative">
+    <table id="schedulerTable" class="table-auto border-collapse border border-gray-300 w-full text-center rounded-lg overflow-hidden">
+      <thead id="tableHeader" class="bg-gray-200 sticky top-0 z-10"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="tooltip" class="tooltip"></div>
+  </div>
+
+  <script>
+    const hours = Array.from({length: 13}, (_, i) => 8 + i);
+    const days = Array.from({length: 10}, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      return { date: d, label: d.toLocaleDateString('default', { month: 'short', day: 'numeric' }) };
+    });
+
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+    const tooltip = document.getElementById('tooltip');
+
+    const schedulerData = JSON.parse(localStorage.getItem('schedulerData') || '[]');
+
+    function createTable() {
+      // Header
+      const headerRow = document.createElement('tr');
+      const emptyCell = document.createElement('th');
+      emptyCell.className = 'border p-2 bg-gray-200 sticky left-0 z-10';
+      emptyCell.innerText = 'Hour';
+      headerRow.appendChild(emptyCell);
+      days.forEach(day => {
+        const th = document.createElement('th');
+        th.className = 'border p-2 bg-gray-200';
+        th.innerText = day.label;
+        headerRow.appendChild(th);
+      });
+      tableHeader.innerHTML = '';
+      tableHeader.appendChild(headerRow);
+
+      // Body
+      tableBody.innerHTML = '';
+      hours.forEach(hour => {
+        const tr = document.createElement('tr');
+        const hourCell = document.createElement('td');
+        hourCell.className = 'border p-2 font-semibold bg-gray-100 sticky left-0 z-10';
+        hourCell.innerText = `${hour}:00`;
+        tr.appendChild(hourCell);
+
+        days.forEach((_, dayIndex) => {
+          const td = document.createElement('td');
+          td.className = 'border p-2 relative';
+          const key = `${dayIndex}-${hour}`;
+          // Count availability
+          const availableUsers = schedulerData.filter(u => u.availability.includes(key)).map(u => u.name);
+          const unavailableUsers = schedulerData.filter(u => !u.availability.includes(key)).map(u => u.name);
+
+          // Color
+          if (availableUsers.length > 1) td.style.backgroundColor = '#22c55e';
+          else if (availableUsers.length === 1) td.style.backgroundColor = '#93c5fd';
+
+          // Hover tooltip
+          td.addEventListener('mouseenter', e => {
+            tooltip.innerHTML = `<strong>Available:</strong> ${availableUsers.join(', ') || 'None'}<br><strong>Unavailable:</strong> ${unavailableUsers.join(', ') || 'None'}`;
+            tooltip.style.display = 'block';
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+          });
+          td.addEventListener('mousemove', e => {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY + 10 + 'px';
+          });
+          td.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+          });
+
+          tr.appendChild(td);
+        });
+
+        tableBody.appendChild(tr);
+      });
+    }
+
+    createTable();
+  </script>
+</body>
+</html>
