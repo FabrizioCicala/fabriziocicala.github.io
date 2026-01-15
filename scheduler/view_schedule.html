@@ -36,9 +36,11 @@
     const days = Array.from({length: 10}, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() + i);
-      const dayName = d.toLocaleDateString('default', { weekday: 'short' }); // e.g., Mon, Tue
-      const monthDay = d.toLocaleDateString('default', { month: 'short', day: 'numeric' }); // e.g., Jan 15
-      return { date: d, label: `${dayName} ${monthDay}` };
+      return {
+        date: d,
+        weekday: d.toLocaleDateString('default', { weekday: 'long' }), // Monday, Tuesday
+        monthDay: d.toLocaleDateString('default', { month: 'short', day: 'numeric' }) // Jan 15
+      };
     });
 
     const tableHeader = document.getElementById('tableHeader');
@@ -57,7 +59,7 @@
       days.forEach(day => {
         const th = document.createElement('th');
         th.className = 'border p-2 bg-gray-200';
-        th.innerText = day.label;
+        th.innerHTML = `<div>${day.weekday}<br>${day.monthDay}</div>`;
         headerRow.appendChild(th);
       });
       tableHeader.innerHTML = '';
